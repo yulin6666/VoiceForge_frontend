@@ -1,0 +1,59 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || 'x86_64-pc-windows-msvc' }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build (Windows)
+        if: matrix.platform == 'windows-latest'
+        run: npm run tauri build
+
+      - name: Build (macOS Universal)
+        if: matrix.platform == 'macos-latest'
+        run: |
+          npm run tauri build -- --target x86_64-apple-darwin
+          npm run tauri build -- --target aarch64-apple-darwin
+          lipo -create \
+            src-tauri/target/x86_64-apple-darwin/release/voiceforge \
+            src-tauri/target/aarch64-apple-darwin/release/voiceforge \
+            -output src-tauri/target/release/voiceforge-universal
+          cp src-tauri/target/release/voiceforge-universal \
+            src-tauri/target/release/bundle/macos/VoiceForge.app/Contents/MacOS/VoiceForge
+          hdiutil create -volname "VoiceForge" \
+            -srcfolder src-tauri/target/release/bundle/macos/VoiceForge.app \
+            -ov -format UDZO VoiceForge_universal.dmg
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-build
+          path: |
+            src-tauri/target/release/bundle/**/*.exe
+            src-tauri/target/release/bundle/**/*.msi
+            *.dmg
