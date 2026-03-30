@@ -45,11 +45,11 @@ jobs:
           lipo -create \
             src-tauri/target/x86_64-apple-darwin/release/voiceforge \
             src-tauri/target/aarch64-apple-darwin/release/voiceforge \
-            -output src-tauri/target/release/voiceforge-universal
-          cp src-tauri/target/release/voiceforge-universal \
-            src-tauri/target/release/bundle/macos/VoiceForge.app/Contents/MacOS/VoiceForge
+            -output src-tauri/target/voiceforge-universal
+          cp -r src-tauri/target/aarch64-apple-darwin/release/bundle/macos/VoiceForge.app VoiceForge.app
+          cp src-tauri/target/voiceforge-universal VoiceForge.app/Contents/MacOS/VoiceForge
           hdiutil create -volname "VoiceForge" \
-            -srcfolder src-tauri/target/release/bundle/macos/VoiceForge.app \
+            -srcfolder VoiceForge.app \
             -ov -format UDZO VoiceForge_universal.dmg
 
       - name: Upload artifacts
