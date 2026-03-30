@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Generate icons
+        run: npm run tauri icon src-tauri/icons/icon.svg
+
       - name: Build (Windows)
         if: matrix.platform == 'windows-latest'
         run: npm run tauri build
