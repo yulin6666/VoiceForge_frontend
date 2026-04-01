@@ -32,6 +32,7 @@ export function GenerationPanel() {
     const dir = await open({
       title: "Select audio output directory",
       directory: true,
+      multiple: false,
     });
     if (dir) setOutputDir(dir as string);
   }

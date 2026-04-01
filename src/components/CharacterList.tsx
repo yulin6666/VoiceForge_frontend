@@ -18,6 +18,8 @@ export function CharacterList() {
     const filePath = await open({
       title: "Select dialogue.tab file",
       filters: [{ name: "Tab-delimited files", extensions: ["tab", "tsv", "txt"] }],
+      multiple: false,
+      directory: false,
     });
 
     if (!filePath) return;
